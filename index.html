@@ -209,121 +209,75 @@
 <footer>
   <div class="live"><span class="dot"></span><span id="stamp">connecting</span></div>
   <p class="note">Indicative rate, calculated from international spot price with import duty, GST and local premium. Not an exchange quote.</p>
-  <button class="settings-btn" id="toggle" aria-expanded="false" aria-controls="panel">Rate settings</button>
 </footer>
 
-<section class="panel" id="panel">
-  <h3>Rate settings</h3>
-  <div class="row">
-    <label for="duty">Import duty %<small>Changed 6% → 15% in May 2026</small></label>
-    <input id="duty" type="number" step="0.1" value="15">
-  </div>
-  <div class="row">
-    <label for="gst">GST %<small>Retail sale of bullion</small></label>
-    <input id="gst" type="number" step="0.1" value="3">
-  </div>
-  <div class="row">
-    <label for="premGold">Gold premium ₹/g<small>Tune until it matches the local rate</small></label>
-    <input id="premGold" type="number" step="1" value="0">
-  </div>
-  <div class="row">
-    <label for="premSilver">Silver premium ₹/g<small>Same idea, for silver</small></label>
-    <input id="premSilver" type="number" step="0.5" value="0">
-  </div>
-  <p class="note" style="text-align:left;margin-top:10px">
-    Settings reset when the page reloads. In the live version these come from your database so you can change them the day a duty notification lands.
-  </p>
-</section>
-
 <script>
-/* ------------------------------------------------------------------
-   DATA SOURCE
-   In production this calls YOUR backend, never the price API directly:
-   the API key stays on your server, and one cron fetch per minute
-   serves every visitor and every widget.
+/* Live data from your own backend. The API key stays on the server;
+   Vercel's CDN caches the response for 60s so one upstream call
+   serves every visitor and every widget. */
 
-     async function fetchRate(){
-       const r = await fetch('/api/rate');   // your own endpoint
-       return r.json();                      // { goldUsdOz, silverUsdOz, usdInr }
-     }
-
-   Below is a simulator so the page moves while you build.
------------------------------------------------------------------- */
-
-const OZ_TO_G = 31.1035;
-
-let feed = { goldUsdOz: 4600, silverUsdOz: 81.3, usdInr: 89.5 };
-let prev = null;
-
-function simulate(){
-  feed.goldUsdOz   += (Math.random() - 0.5) * 6;
-  feed.silverUsdOz += (Math.random() - 0.5) * 0.35;
-  feed.usdInr      += (Math.random() - 0.5) * 0.05;
-}
-
-function cfg(){
-  return {
-    duty: (+document.getElementById('duty').value || 0) / 100,
-    gst:  (+document.getElementById('gst').value  || 0) / 100,
-    pg:   +document.getElementById('premGold').value   || 0,
-    ps:   +document.getElementById('premSilver').value || 0
-  };
-}
-
-/* the formula — this is the whole product */
-function perGram(usdPerOz, usdInr, duty, gst, premium){
-  return (usdPerOz / OZ_TO_G) * usdInr * (1 + duty) * (1 + gst) + premium;
-}
+const API = '/api/rate';
 
 const inr = n => Math.round(n).toLocaleString('en-IN');
 
+let prev = null;          // first reading of this page session
+let lastGood = null;      // never blank the board
+
 function setDelta(el, now, before){
-  if (before === null || before === undefined){ el.textContent = '—'; return; }
+  if (before === null){ el.textContent = 'first reading'; el.className = 'delta flat'; return; }
   const d = Math.round(now - before);
   el.className = 'delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : 'flat');
-  el.textContent = d === 0 ? 'no change' : (d > 0 ? '▲ ₹' : '▼ ₹') + inr(Math.abs(d)) + ' today';
+  el.textContent = d === 0 ? 'no change' : (d > 0 ? 'UP RS ' : 'DOWN RS ') + inr(Math.abs(d)) + ' since open';
 }
 
-function render(){
-  const c = cfg();
-  const g999g = perGram(feed.goldUsdOz,   feed.usdInr, c.duty, c.gst, c.pg);
-  const s999g = perGram(feed.silverUsdOz, feed.usdInr, c.duty, c.gst, c.ps);
+function paint(d){
+  document.getElementById('gold999').textContent = inr(d.gold.per10g999);
+  document.getElementById('gold916').textContent = inr(d.gold.per10g916);
 
-  const g10 = g999g * 10;
-  const g916 = g10 * 0.916;
-  const sKg = s999g * 1000;
+  if (d.silver){
+    document.getElementById('silver999').textContent = inr(d.silver.perKg999);
+    document.getElementById('silver10g').textContent = inr(d.silver.per10g999);
+  } else {
+    document.getElementById('silver999').textContent = '-';
+    document.getElementById('silver10g').textContent = '-';
+    document.getElementById('silverDelta').textContent = 'silver feed not connected yet';
+  }
 
-  document.getElementById('gold999').textContent  = inr(g10);
-  document.getElementById('gold916').textContent  = inr(g916);
-  document.getElementById('silver999').textContent = inr(sKg);
-  document.getElementById('silver10g').textContent = inr(s999g * 10);
+  const intl = d.international || {};
+  document.getElementById('spotGold').textContent   = intl.goldUsdPerOz ? '$' + intl.goldUsdPerOz.toFixed(2) : '-';
+  document.getElementById('spotSilver').textContent = intl.silverUsdPerOz ? '$' + intl.silverUsdPerOz.toFixed(2) : '-';
+  document.getElementById('fx').textContent         = intl.usdInr ? intl.usdInr.toFixed(2) : '-';
 
-  document.getElementById('spotGold').textContent   = '$' + feed.goldUsdOz.toFixed(2);
-  document.getElementById('spotSilver').textContent = '$' + feed.silverUsdOz.toFixed(2);
-  document.getElementById('fx').textContent         = feed.usdInr.toFixed(2);
-
-  if (prev === null) prev = { g: g10, s: sKg };
-  setDelta(document.getElementById('goldDelta'),   g10, prev.g);
-  setDelta(document.getElementById('silverDelta'), sKg, prev.s);
+  if (prev === null) prev = { g: d.gold.per10g999, s: d.silver ? d.silver.perKg999 : null };
+  setDelta(document.getElementById('goldDelta'), d.gold.per10g999, prev.g);
+  if (d.silver) setDelta(document.getElementById('silverDelta'), d.silver.perKg999, prev.s);
 
   document.getElementById('stamp').textContent =
-    'updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    'updated ' + new Date(d.updatedAt).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+}
+
+async function tick(){
+  try {
+    const res = await fetch(API, { cache: 'no-store' });
+    if (!res.ok) throw new Error('rate ' + res.status);
+    const d = await res.json();
+    if (!d.gold) throw new Error('no gold in response');
+    lastGood = d;
+    paint(d);
+  } catch (err) {
+    // An older number with an honest label beats a blank board.
+    document.getElementById('stamp').textContent = lastGood
+      ? 'reconnecting - showing last known rate'
+      : 'rate unavailable - retrying';
+    console.warn('rate fetch failed:', err.message);
+  }
 }
 
 document.getElementById('today').textContent =
   new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
-const toggle = document.getElementById('toggle');
-toggle.addEventListener('click', () => {
-  const p = document.getElementById('panel');
-  const open = p.classList.toggle('open');
-  toggle.setAttribute('aria-expanded', String(open));
-});
-
-document.querySelectorAll('.panel input').forEach(i => i.addEventListener('input', render));
-
-render();
-setInterval(() => { simulate(); render(); }, 5000);
+tick();
+setInterval(tick, 60000);
 </script>
 </body>
 </html>
