@@ -137,11 +137,11 @@
 
   footer{max-width:760px;margin:26px auto 0;text-align:center}
   .liveTag{
-    display:inline-flex;align-items:center;gap:5px;
+    display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;align-self:center;
     font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--up);margin-left:8px;
+    color:var(--up);
   }
-  .liveTag .dot{width:6px;height:6px}
+  .liveTag .dot{width:7px;height:7px}
   .live{
     display:inline-flex;align-items:center;gap:8px;
     font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ivory-dim);
@@ -191,8 +191,8 @@
   <!-- GOLD -->
   <section class="card">
     <div class="metal">
-      <h2>सोना<span>Gold 999 · 24K<span class="liveTag"><span class="dot"></span>Live</span></span></h2>
-      <div class="swatch g"></div>
+      <h2>सोना<span>Gold 999 · 24K</span></h2>
+      <span class="liveTag">Live<span class="dot"></span></span>
     </div>
     <div class="big gold-num"><span class="rs">₹</span><span id="gold999">—</span></div>
     <div class="unit">per 10 grams</div>
@@ -206,8 +206,8 @@
   <!-- SILVER -->
   <section class="card">
     <div class="metal">
-      <h2>चाँदी<span>Silver 999<span class="liveTag"><span class="dot"></span>Live</span></span></h2>
-      <div class="swatch s"></div>
+      <h2>चाँदी<span>Silver 999</span></h2>
+      <span class="liveTag">Live<span class="dot"></span></span>
     </div>
     <div class="big silver-num"><span class="rs">₹</span><span id="silver999">—</span></div>
     <div class="unit">per kilogram</div>
@@ -301,3 +301,4 @@ setInterval(tick, 60000);
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
+
