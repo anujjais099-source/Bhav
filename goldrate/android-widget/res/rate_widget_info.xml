@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/xml/rate_widget_info.xml -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:description="@string/widget_description"
+    android:previewLayout="@layout/glance_default_loading_layout"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:updatePeriodMillis="1800000" />
+<!--
+  updatePeriodMillis: 1800000 = 30 minutes. This is the system MINIMUM.
+  Anything smaller is silently ignored by Android. RefreshWorker does the
+  real work at 15 minutes; this is just the safety net.
+-->
