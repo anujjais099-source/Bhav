@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Bhav" parent="android:Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/lacquer_deep</item>
+        <item name="android:statusBarColor">@color/lacquer_deep</item>
+        <item name="android:navigationBarColor">@color/lacquer_deep</item>
+    </style>
+</resources>
