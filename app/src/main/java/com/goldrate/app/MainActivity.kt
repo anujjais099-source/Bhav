@@ -52,7 +52,9 @@ class MainActivity : ComponentActivity() {
                 dismissSplashWhenReady()
             }
         }
-        webView.loadUrl("https://bhav-tau.vercel.app/")
+        // ?src=android_app lets the site's existing Google Analytics tell an
+        // app open apart from a regular mobile-browser visit.
+        webView.loadUrl("https://bhav-tau.vercel.app/?src=android_app")
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

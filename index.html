@@ -28,6 +28,13 @@
   gtag('js', new Date());
 
   gtag('config', 'G-4TNDTQWXRS');
+
+  // Fired only when opened from inside the Android app's WebView (see
+  // MainActivity's loadUrl) — gives an exact "app opens" count in GA,
+  // instead of guessing from browser/user-agent.
+  if (new URLSearchParams(location.search).get('src') === 'android_app') {
+    gtag('event', 'app_open');
+  }
 </script>
 <style>
   :root{
