@@ -3,4 +3,8 @@
     <string name="app_name">Bhav-tau</string>
     <string name="widget_label">आज का भाव</string>
     <string name="widget_description">Today\'s gold and silver rate on your home screen</string>
+
+    <string name="splash_tagline">LIVE GOLD &amp; SILVER RATES</string>
+    <string name="splash_tagline_hi">आज का भाव, हर पल आपके साथ</string>
+    <string name="splash_loading">Loading live rates…</string>
 </resources>
