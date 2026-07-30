@@ -28,6 +28,16 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      # Every run is a fresh VM, so without this each build gets signed with
+      # a brand-new random debug key — installing a newer APK over an older
+      # one would fail with a signature mismatch. Caching the keystore keeps
+      # every build signed the same way, so updates always install cleanly.
+      - name: Restore stable debug keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
+
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
 
