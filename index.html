@@ -186,6 +186,39 @@
   @media (prefers-reduced-motion:reduce){
     .dot{animation:none}
   }
+
+  .appPromo{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);
+    display:none;align-items:center;justify-content:center;
+    padding:20px;z-index:100;
+  }
+  .appPromo.show{display:flex}
+  .appPromo-card{
+    width:100%;max-width:340px;text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.18)), var(--lac);
+    border:1px solid var(--lac-line);border-radius:6px;
+    padding:28px 24px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(214,169,74,.16);
+  }
+  .appPromo-badge{
+    width:56px;height:56px;margin:0 auto 14px;border-radius:50%;
+    border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+    font-family:Georgia,serif;font-weight:700;font-size:20px;color:var(--gold);
+  }
+  .appPromo-card h3{font-size:18px;color:var(--ivory);margin-bottom:8px}
+  .appPromo-card p{font-size:13px;line-height:1.55;color:var(--ivory-dim);margin-bottom:20px}
+  .appPromo-download{
+    display:block;width:100%;background:var(--gold);color:var(--lac-deep);
+    font-family:var(--num);font-weight:700;font-size:14px;letter-spacing:.04em;
+    padding:13px;border-radius:3px;text-decoration:none;
+  }
+  .appPromo-download:hover{background:#e3ba61}
+  .appPromo-dismiss{
+    display:inline-block;margin-top:14px;background:none;border:none;
+    font-family:var(--num);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ivory-dim);cursor:pointer;padding:6px;
+  }
+  .appPromo-dismiss:hover{color:var(--ivory)}
 </style>
 </head>
 <body>
@@ -306,6 +339,52 @@ document.getElementById('today').textContent =
 
 tick();
 setInterval(tick, 60000);
+</script>
+<div class="appPromo" id="appPromo">
+  <div class="appPromo-card">
+    <div class="appPromo-badge">BT</div>
+    <h3>Get the Bhav-tau App</h3>
+    <p>Faster access and a home-screen widget with today's rate — works even with patchy signal.</p>
+    <a class="appPromo-download" id="appPromoDownload" href="https://github.com/anujjais099-source/Bhav/releases/download/latest/bhav-tau.apk" download>Download for Android</a>
+    <button class="appPromo-dismiss" id="appPromoDismiss" type="button">Not now</button>
+  </div>
+</div>
+
+<script>
+/* Only worth showing to Android visitors who aren't already inside the
+   app's own WebView, and not to someone who just dismissed it. */
+(function(){
+  var ua = navigator.userAgent;
+  var isAndroid = /Android/i.test(ua);
+  var isInApp = /; wv\)/.test(ua);
+  var KEY = 'appPromoDismissedAt';
+  var SNOOZE_DAYS = 14;
+
+  function dismissed(){
+    var last = localStorage.getItem(KEY);
+    if (!last) return false;
+    return (Date.now() - Number(last)) / 86400000 < SNOOZE_DAYS;
+  }
+
+  if (!isAndroid || isInApp || dismissed()) return;
+
+  var promo = document.getElementById('appPromo');
+
+  function snooze(){
+    localStorage.setItem(KEY, String(Date.now()));
+    promo.classList.remove('show');
+  }
+
+  setTimeout(function(){ promo.classList.add('show'); }, 1500);
+
+  document.getElementById('appPromoDismiss').addEventListener('click', snooze);
+  document.getElementById('appPromoDownload').addEventListener('click', function(){
+    localStorage.setItem(KEY, String(Date.now()));
+  });
+  promo.addEventListener('click', function(e){
+    if (e.target === promo) snooze();
+  });
+})();
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
